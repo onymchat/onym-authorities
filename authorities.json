@@ -1,0 +1,11 @@
+{
+  "authorities": [
+    {
+      "componentId": "onym:component:onym-authority",
+      "name": "Onym Authority",
+      "manifestURL": "https://authority.onym.app/manifest.json",
+      "apiBaseURL": "https://authority.onym.app",
+      "operatorPublicKeyBase64": "vexoqEQPNlkd2CJ0j4b+41gnlLPSBEWwaVPbbyZvPco="
+    }
+  ]
+}
