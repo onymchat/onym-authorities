@@ -77,9 +77,32 @@ before the operation surface existed; those resolve the API beside
 
 ## Integrity
 
-The fetcher accepts an optional detached `.sig` alongside the asset and
-is **soft-verifying** today: the release-signing pipeline is not live,
-so a signature is checked when present and its absence is not fatal.
-Until that changes, the only thing protecting this directory is who can
-publish releases on this repository. Restrict that accordingly, and
-treat it as the control it is.
+The release-signing pipeline is **live**: every release attaches
+`authorities.json.sig`, a detached Ed25519 signature over the exact
+`authorities.json` bytes, produced by [`sign.sh`](./sign.sh) with the
+directory root key. The matching public key is committed at
+[`directory-root-pubkey.txt`](./directory-root-pubkey.txt) and pinned
+in the clients.
+
+Wire contract (same as the authority-manifest `.sig` in onym-infra):
+base64 of the 64-byte raw signature, trailing newline; verifiers trim
+whitespace before decoding.
+
+Client posture:
+
+- **Android** pins the root key in the app and **hard-refuses** an
+  unsigned or tampered directory (`OkHttpKnownAuthoritiesFetcher`,
+  onym-android#219). A release published without its `.sig` — or
+  signed with a different key — yields no authorities on Android, and
+  therefore no consent.
+- **iOS** soft-verifies through `SignedAsset` today (checked when
+  present, absence logged); flipping `ContractsTrust` to enforce is
+  tracked on the iOS side.
+
+The **private** root key never enters this repository, any CI secret,
+or any machine that doesn't need it — it is the root of the moderation
+consent trust chain and is held offline by the release manager.
+Publishing rights on this repository remain a control worth
+restricting (a malicious release still reaches soft-verifying
+clients), but pinning means GitHub compromise alone can no longer
+substitute an authority on enforcing clients.
